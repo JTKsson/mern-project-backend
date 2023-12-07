@@ -1,20 +1,13 @@
 import "dotenv/config";
 import express from "express";
 import mongoose from "mongoose";
-import User from "./models/User";
-
+import * as authController from "./controllers/auth"; //imports all exports in the file
 const app = express();
 
 app.use(express.json());
 
-app.post("/register", async (req, res) => {
-  const { username, password } = req.body;
-
-  const user = new User({userName: username, password})
-  await user.save()
-
-  res.send({username, id: user._id})
-});
+app.post("/register", authController.register);
+app.post("login", authController.logIn)
 
 const mongoURL = process.env.DB_URL;
 if (!mongoURL) throw Error("Missing DB URL");
