@@ -18,6 +18,7 @@ const UserSchema = new Schema<IUser>({
   },
   password: {
     type: String,
+    select: false, //plockar aldrig ut lösenordet 
     required: true
   }
 }, {
