@@ -27,11 +27,15 @@ export const getAllPosts = async (req: Request, res: Response) => {
   const page = parseInt(req.query.page?.toString() || "1");
 
   if (isNaN(page) || isNaN(limit)) {
-    res.status(400).json({ message: "Malformed query object number" + req.query.toString() });
+    res
+      .status(400)
+      .json({
+        message: "Malformed query object number" + req.query.toString(),
+      });
   }
 
   const posts = await Post
-    .find()
+    .find({}, "-comments")
     .sort({ createdAt: "descending" })
     .limit(limit)
     .skip(limit * (page - 1))
@@ -49,11 +53,16 @@ export const getAllPosts = async (req: Request, res: Response) => {
 export const getPost = async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const post = await Post.findById(id).populate("author", "userName");
+  const post = await Post.findById(id)
+  .populate("author")
+  .populate("comments.author");
 
   if (!post) {
     return res.status(404).json({ message: "No posts found for id: " + id });
   }
+
+  post.upvote
+  post.downvote
 
   res.status(200).json(post);
 };
