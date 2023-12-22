@@ -41,7 +41,7 @@ export const logIn = async (req: Request, res: Response) => {
 
     const token = jwt.sign({ userId: user._id }, secret/*, {expiresIn: "1h"}*/);
 
-    res.status(200).json({ token, username: user.userName });
+    res.status(200).json({ token, username: user.userName, userID: user._id });
   } catch (error) {
     res.status(500).json({
       message: "Nåt gick fel bror",

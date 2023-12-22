@@ -20,11 +20,15 @@ app.get("/profile", validateToken, authController.profile);
 app.post("/posts", validateToken, postsController.create)
 app.get("/posts", postsController.getAllPosts)
 app.get("/posts/:id", postsController.getPost) //id för att hämta en specifik post
+// app.put("/posts/:id", validateToken, postsController.updatePost) //id för att hämta en specifik post
+// app.delete('/posts/:postId', validateToken, postsController.deletePost);
+
 
 app.post("/posts/:postId/upvote", validateToken, votesController.upvote)
 app.post("/posts/:postId/downvote", validateToken, votesController.downvote)
 
 app.post('/posts/:postId/comments', validateToken, commentsController.createComment);
+//app.post('/posts/:postId/comments', validateToken, commentsController.updateComment);
 app.delete('/posts/:postId/comments/:commentId', validateToken, commentsController.deleteComment);
 
 const mongoURL = process.env.DB_URL;
