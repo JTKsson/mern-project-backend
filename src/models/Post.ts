@@ -24,10 +24,17 @@ const CommentSchema = new Schema<IComment>(
   }
 );
 
+interface Image {
+  mimeType: string;
+  size: number;
+  id: Types.ObjectId;
+}
+
 interface IPost extends Document {
   title: string;
   link?: string;
   body?: string;
+  image?: Image;
   author: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -39,8 +46,8 @@ interface IPost extends Document {
 
 interface IPostProps {
   comments: Types.DocumentArray<IComment>;
-  upvote: (userId: string) => void
-  downvote: (userId: string) => void
+  upvote: (userId: string) => void;
+  downvote: (userId: string) => void;
 }
 
 type IPostModel = Model<IPost, {}, IPostProps>;
@@ -58,6 +65,17 @@ const PostSchema = new Schema<IPost, IPostModel>(
     },
     body: {
       type: String,
+    },
+    image: {
+      mimeType: {
+        type: String,
+      },
+      size: {
+        type: Number,
+      },
+      id: {
+        type: Schema.Types.ObjectId,
+      },
     },
     author: {
       type: Schema.Types.ObjectId,
@@ -87,34 +105,28 @@ const PostSchema = new Schema<IPost, IPostModel>(
   }
 );
 
-PostSchema.method(
-  "upvote",
-  async function (this: IPost, userId: string) {
-    const userIdObject = new Types.ObjectId(userId);
+PostSchema.method("upvote", async function (this: IPost, userId: string) {
+  const userIdObject = new Types.ObjectId(userId);
 
-    if (this.upvotes.includes(userIdObject)) {
-      return;
-    } else if (this.downvotes.includes(userIdObject)) {
-      this.downvotes.pull(userIdObject);
-    }
-
-    this.upvotes.push(userIdObject);
+  if (this.upvotes.includes(userIdObject)) {
+    return;
+  } else if (this.downvotes.includes(userIdObject)) {
+    this.downvotes.pull(userIdObject);
   }
-);
-PostSchema.method(
-  "downvote",
-  async function (this: IPost, userId: string) {
-    const userIdObject = new Types.ObjectId(userId);
 
-    if (this.downvotes.includes(userIdObject)) {
-      return;
-    } else if (this.upvotes.includes(userIdObject)) {
-      this.upvotes.pull(userIdObject);
-    }
+  this.upvotes.push(userIdObject);
+});
+PostSchema.method("downvote", async function (this: IPost, userId: string) {
+  const userIdObject = new Types.ObjectId(userId);
 
-    this.downvotes.push(userIdObject);
+  if (this.downvotes.includes(userIdObject)) {
+    return;
+  } else if (this.upvotes.includes(userIdObject)) {
+    this.upvotes.pull(userIdObject);
   }
-);
+
+  this.downvotes.push(userIdObject);
+});
 
 PostSchema.pre<IPost>("save", function (next) {
   if (this.isModified("upvotes") || this.isModified("downvotes")) {

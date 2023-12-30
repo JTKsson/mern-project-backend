@@ -25,6 +25,29 @@ export const createComment = async (req: Request, res: Response) => {
     res.status(201).json(savedPost);
 }
 
+export const updateComment = async (req: Request, res: Response) => {
+    const { postId } = req.params;
+    const { userId } = req;
+    assertDefined(userId);
+
+    const { commentBody } = req.body
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+        return res.status(404).json({ message: 'Not post found for id: ' + postId });
+    }
+
+    post.comments.push({
+        body: commentBody,
+        author: userId
+    });
+
+    const savedPost = await post.save();
+
+    res.status(201).json(savedPost);
+}
+
 export const deleteComment = async (req: Request, res: Response) => {
     const { postId, commentId } = req.params;
     const { userId } = req;
