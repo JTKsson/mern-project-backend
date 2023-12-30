@@ -8,36 +8,36 @@ export const create = async (req: Request, res: Response) => {
   const { title, link, body } = req.body;
 
   try {
-  const post = new Post({
-    title,
-    link,
-    body,
-    author: req.userId,
-  });
+    const post = new Post({
+      title,
+      link,
+      body,
+      author: req.userId,
+    });
 
-  if (req.file) {
-    const dbConnection = mongoose.connection;
+    if (req.file) {
+      const dbConnection = mongoose.connection;
 
-    const bucket = new mongoose.mongo.GridFSBucket(dbConnection.db, {
-      bucketName: "images"
-    })
+      const bucket = new mongoose.mongo.GridFSBucket(dbConnection.db, {
+        bucketName: "images",
+      });
 
-    const uploadStream = bucket.openUploadStream(req.file.originalname);
-    const fileId = uploadStream.id;
+      const uploadStream = bucket.openUploadStream(req.file.originalname);
+      const fileId = uploadStream.id;
 
-    await new Promise((resolve, reject) => {
-      uploadStream.once("finish", resolve);
-      uploadStream.once("error", reject)
+      await new Promise((resolve, reject) => {
+        uploadStream.once("finish", resolve);
+        uploadStream.once("error", reject);
 
-      uploadStream.end(req.file?.buffer)
-    })
+        uploadStream.end(req.file?.buffer);
+      });
 
-    post.image = {
-      mimeType: req.file.mimetype,
-      size: req.file.size,
-      id: fileId
+      post.image = {
+        mimeType: req.file.mimetype,
+        size: req.file.size,
+        id: fileId,
+      };
     }
-  }
 
     const savedPost = await post.save();
     res.status(201).json(savedPost);
@@ -94,36 +94,36 @@ export const updatePost = async (req: Request, res: Response) => {
   const { title, link, body } = req.body;
 
   try {
-  const post = new Post({
-    title,
-    link,
-    body,
-    author: req.userId,
-  });
+    const post = new Post({
+      title,
+      link,
+      body,
+      author: req.userId,
+    });
 
-  if (req.file) {
-    const dbConnection = mongoose.connection;
+    if (req.file) {
+      const dbConnection = mongoose.connection;
 
-    const bucket = new mongoose.mongo.GridFSBucket(dbConnection.db, {
-      bucketName: "images"
-    })
+      const bucket = new mongoose.mongo.GridFSBucket(dbConnection.db, {
+        bucketName: "images",
+      });
 
-    const uploadStream = bucket.openUploadStream(req.file.originalname);
-    const fileId = uploadStream.id;
+      const uploadStream = bucket.openUploadStream(req.file.originalname);
+      const fileId = uploadStream.id;
 
-    await new Promise((resolve, reject) => {
-      uploadStream.once("finish", resolve);
-      uploadStream.once("error", reject)
+      await new Promise((resolve, reject) => {
+        uploadStream.once("finish", resolve);
+        uploadStream.once("error", reject);
 
-      uploadStream.end(req.file?.buffer)
-    })
+        uploadStream.end(req.file?.buffer);
+      });
 
-    post.image = {
-      mimeType: req.file.mimetype,
-      size: req.file.size,
-      id: fileId
+      post.image = {
+        mimeType: req.file.mimetype,
+        size: req.file.size,
+        id: fileId,
+      };
     }
-  }
 
     const savedPost = await post.save();
     res.status(201).json(savedPost);
@@ -131,6 +131,28 @@ export const updatePost = async (req: Request, res: Response) => {
     console.log(error);
     res.status(500).json({ message: "Failed to create post" });
   }
+};
+
+export const deletePost = async (req: Request, res: Response) => {
+  const { postId } = req.params;
+  const { userId } = req;
+  assertDefined(userId);
+
+  const post = await Post.findById(postId);
+
+  if (!post) {
+    return res
+      .status(404)
+      .json({ message: "Post not found for id: " + postId });
+  }
+
+  if (post.author.toString() !== userId) {
+    return res.status(403).json({ message: "Not authorized" });
+  }
+
+  await post.deleteOne();
+
+  return res.status(200).json({ message: "post successfully deleted" });
 };
 
 // export const updatePost = async (req: Request, res: Response) => {

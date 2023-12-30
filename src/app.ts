@@ -24,7 +24,7 @@ app.post("/posts", validateToken, upload.single("image"), postsController.create
 app.get("/posts", postsController.getAllPosts)
 app.get("/posts/:id", postsController.getPost) //id för att hämta en specifik post
 app.put("/posts/:postId/update", validateToken, postsController.updatePost)
-//app.delete('/posts/:postId', validateToken, postsController.deletePost);
+app.delete('/posts/:postId', validateToken, postsController.deletePost);
 
 
 app.post("/posts/:postId/upvote", validateToken, votesController.upvote)
