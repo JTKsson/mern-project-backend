@@ -136,8 +136,8 @@ export const updatePost = async (req: Request, res: Response) => {
 
     const updatedPost = await post.save();
 
-    console.log(res)
-    console.log(updatedPost)
+    //console.log(res)
+    console.log(req.body)
 
     res.status(200).json(updatedPost);
   } catch (error) {

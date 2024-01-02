@@ -31,7 +31,6 @@ app.post("/posts/:postId/upvote", validateToken, votesController.upvote)
 app.post("/posts/:postId/downvote", validateToken, votesController.downvote)
 
 app.post('/posts/:postId/comments', validateToken, commentsController.createComment);
-app.put('/posts/:postId/comments/:commentId', validateToken, commentsController.updateComment);
 app.delete('/posts/:postId/comments/:commentId', validateToken, commentsController.deleteComment);
 
 app.get("/images/:id", imageController.getImage)
