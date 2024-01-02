@@ -40,6 +40,7 @@ export const create = async (req: Request, res: Response) => {
     }
 
     const savedPost = await post.save();
+    console.log({savedPost})
     res.status(201).json(savedPost);
   } catch (error) {
     console.log(error);
@@ -89,50 +90,6 @@ export const getPost = async (req: Request, res: Response) => {
   res.status(200).json(post);
 };
 
-export const updatePost = async (req: Request, res: Response) => {
-  assertDefined(req.userId);
-  const { title, link, body } = req.body;
-
-  try {
-    const post = new Post({
-      title,
-      link,
-      body,
-      author: req.userId,
-    });
-
-    if (req.file) {
-      const dbConnection = mongoose.connection;
-
-      const bucket = new mongoose.mongo.GridFSBucket(dbConnection.db, {
-        bucketName: "images",
-      });
-
-      const uploadStream = bucket.openUploadStream(req.file.originalname);
-      const fileId = uploadStream.id;
-
-      await new Promise((resolve, reject) => {
-        uploadStream.once("finish", resolve);
-        uploadStream.once("error", reject);
-
-        uploadStream.end(req.file?.buffer);
-      });
-
-      post.image = {
-        mimeType: req.file.mimetype,
-        size: req.file.size,
-        id: fileId,
-      };
-    }
-
-    const savedPost = await post.save();
-    res.status(201).json(savedPost);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Failed to create post" });
-  }
-};
-
 export const deletePost = async (req: Request, res: Response) => {
   const { postId } = req.params;
   const { userId } = req;
@@ -155,30 +112,36 @@ export const deletePost = async (req: Request, res: Response) => {
   return res.status(200).json({ message: "post successfully deleted" });
 };
 
-// export const updatePost = async (req: Request, res: Response) => {
-//   const { id } = req.params;
+export const updatePost = async (req: Request, res: Response) => {
+  assertDefined(req.userId);
 
-//   try {
-//     let post = await Post.findById(id)
-//       .populate("author")
-//       .populate("comments.author");
+  const { title, link, body } = req.body;
 
-//     if (!post) {
-//       return res.status(404).json({ message: "No posts found for id: " + id });
-//     }
+  try {
+    const post = await Post.findById(req.params.id);
 
-//     // If the post exists, update its content
-//     assertDefined(req.userId);
-//     const { title, link, body } = req.body;
+    if (!post) {
+      return res
+        .status(404)
+        .json({ message: "No post found" });
+    }
 
-//     post.title = title || post.title;
-//     post.link = link || post.link;
-//     post.body = body || post.body;
+    if (post.author.toString() !== req.userId) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
 
-//     const updatedPost = await post.save();
-//     return res.status(200).json(updatedPost);
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(500).json({ message: "Failed to update post" });
-//   }
-// };
+    post.title = title || post.title;
+    post.link = link || post.link;
+    post.body = body || post.body;
+
+    const updatedPost = await post.save();
+
+    console.log(res)
+    console.log(updatedPost)
+
+    res.status(200).json(updatedPost);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Failed to update post" });
+  }
+};

@@ -23,7 +23,7 @@ app.get("/profile", validateToken, authController.profile);
 app.post("/posts", validateToken, upload.single("image"), postsController.create)
 app.get("/posts", postsController.getAllPosts)
 app.get("/posts/:id", postsController.getPost) //id för att hämta en specifik post
-app.put("/posts/:postId/update", validateToken, postsController.updatePost)
+app.put("/posts/:id", validateToken, postsController.updatePost)
 app.delete('/posts/:postId', validateToken, postsController.deletePost);
 
 
